@@ -18,9 +18,12 @@ const Home = () => {
   const [searchedWeather, setSearchedWeather] = useState<WeatherData | null>(
     null
   );
-  const apiKey = "cf107f47569c8e106ba1a59feec363e1";
+
+  const apiKey = import.meta.env.VITE_OPENWEATHER_API_KEY;
 
   useEffect(() => {
+    if (!apiKey) return;
+
     const fetchDefaultCities = async () => {
       const results = await Promise.all(
         defaultNepaliCities.map((city) =>
@@ -36,10 +39,10 @@ const Home = () => {
     };
 
     fetchDefaultCities();
-  }, []);
+  }, [apiKey]);
 
   const handleSearch = async () => {
-    if (!searchCity.trim()) return;
+    if (!searchCity.trim() || !apiKey) return;
 
     try {
       const res = await axios.get(
@@ -52,10 +55,19 @@ const Home = () => {
     }
   };
 
+  if (!apiKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <p className="text-red-600 font-bold">
+          OpenWeather API key is missing. Please add it to your environment
+          variables.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-blue-100 p-6">
-      {/* <h1 className="text-3xl font-bold text-center mb-6">Weather</h1> */}
-
       <div className="flex justify-center mb-8">
         <input
           type="text"
@@ -79,7 +91,6 @@ const Home = () => {
         </div>
       )}
 
-      {/* <h2 className="text-xl font-semibold mb-4 text-center">Weather</h2> */}
       <div className="flex flex-wrap justify-center gap-6">
         {weatherList.map((data, index) => (
           <WeatherCard key={index} data={data} />
